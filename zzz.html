@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>Document</title>
+</head>
+<style>
+    .container {
+        width: 80%;
+        margin: 0 auto;
+        border: 1px solid black;
+    }
+    .input {
+        width: 80%;
+        margin: 0 auto;
+        border: 1px solid black;
+    }
+</style>
+<body>
+    
+<div class="container">
+    <div id="items"></div>
+</div>
+    
+<div class="input">
+    <input id = "inputName"/>
+    <input id = "inputText"/>
+    <button id="textBtn" onclick="textBtn_click();">전송</button>
+</div>
+
+<script
+  src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js">
+  integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc="
+  crossorigin="anonymous"></script>
+<script>
+    
+    fetch("http://localhost:8080/").then(res => res.json()).then(res=>{
+    const eventSource = new EventSource("http://localhost:8080/sse");
+            eventSource.onmessage = event => {
+                console.log("event.data" + event.data);
+                let items_el = document.querySelector("#items");
+                let item_el = document.createElement("div");
+                    item_el.innerHTML = event.data;
+                    items_el.appendChild(item_el);
+            };
+            eventSource.onerror = error => {
+                 eventSource.close();
+            };
+        
+    });
+
+    function textBtn_click() {
+                let nameText = document.querySelector("#inputName").value;
+                let contentText = document.querySelector("#inputText").value;
+
+                var data = {
+                    name : nameText,
+                    content : contentText
+                }
+                
+                console.log(data);
+
+                $.ajax({
+                type: "POST",
+                url: "http://localhost:8080/send",
+                data: JSON.stringify(data),
+                contentType: "application/json",
+                })
+                .done(function(res){
+                    $("#inputText").val("");
+                })
+            }
+
+    
+</script>    
+</body>
+</html>
